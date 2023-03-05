@@ -73,4 +73,34 @@ public class NoteAPI {
         // We can use future.get(1, SECONDS) to wait for the result.
         return future;
     }
+
+    @AnyThread
+    public String getNoteAsync(String title) {
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> {
+                    String noteBody = getNote(title);
+                    return noteBody;
+                });
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+        return null;
+    }
+
+    public String getNote(String title) {
+        title = title.replace(" ", "%20");
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
+                .build();
+
+        try (var response = client.newCall(request).execute()) {
+//            if (response.body() == null){
+//                return null;
+//            }
+            var body = response.body().string();
+            return body;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

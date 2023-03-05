@@ -103,8 +103,12 @@ public class NoteRepository {
         // You may (but don't have to) want to cache the LiveData's for each title, so that
         // you don't create a new polling thread every time you call getRemote with the same title.
         // You don't need to worry about killing background threads.
+        if (existsLocal(title)) {
+            return dao.get(title);
+        }
+        return null;
 
-        throw new UnsupportedOperationException("Not implemented yet");
+        //throw new UnsupportedOperationException("Not implemented yet");
     }
 
     public void upsertRemote(Note note) {

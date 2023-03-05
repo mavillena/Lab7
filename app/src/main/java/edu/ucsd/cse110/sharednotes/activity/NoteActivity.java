@@ -12,10 +12,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.concurrent.Future;
+
 import edu.ucsd.cse110.sharednotes.R;
 import edu.ucsd.cse110.sharednotes.model.Note;
+import edu.ucsd.cse110.sharednotes.model.NoteAPI;
 import edu.ucsd.cse110.sharednotes.model.NoteDao;
 import edu.ucsd.cse110.sharednotes.model.NoteDatabase;
+import edu.ucsd.cse110.sharednotes.model.NoteRepository;
 import edu.ucsd.cse110.sharednotes.viewmodel.ListViewModel;
 import edu.ucsd.cse110.sharednotes.viewmodel.NoteViewModel;
 
@@ -31,11 +35,23 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note);
         contentView = findViewById(R.id.edittext_note_contents);
 
+        NoteRepository repo = new NoteRepository(this.dao);
+        NoteAPI api = new NoteAPI();
+
         var intent = getIntent();
         var title = intent.getStringExtra("note_title");
+        String remoteNoteBody = api.getNoteAsync(title);
+
 
         var viewModel = setupViewModel();
         note = viewModel.getNote(title);
+
+
+        if (remoteNoteBody != null) {
+            note.observe(this, note -> {
+                note.content = remoteNoteBody;
+            });
+        }
         
         // Set up the toolbar.
         setupToolbar(title);
