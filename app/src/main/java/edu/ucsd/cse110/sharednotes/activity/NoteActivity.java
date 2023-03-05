@@ -1,8 +1,11 @@
 package edu.ucsd.cse110.sharednotes.activity;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -43,29 +46,28 @@ public class NoteActivity extends AppCompatActivity {
 
         var intent = getIntent();
         var title = intent.getStringExtra("note_title");
-        String remoteNoteBody = null;
-        try {
-            remoteNoteBody = api.getNoteAsync(title);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-
+//        Future<String> stringFuture;
+//        String noteBody;
+//        try {
+//            stringFuture = api.getNoteAsync(title);
+//            noteBody = stringFuture.get(1, SECONDS);
+//        } catch (ExecutionException e) {
+//            throw new RuntimeException(e);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        } catch (TimeoutException e) {
+//            throw new RuntimeException(e);
+//        }
 
         var viewModel = setupViewModel();
         note = viewModel.getNote(title);
 
+//        if (noteBody != null) {
+//            note.observe(this, note -> {
+//                note.content = noteBody;
+//            });
+//        }
 
-        if (remoteNoteBody != null) {
-            String finalRemoteNoteBody = remoteNoteBody;
-            note.observe(this, note -> {
-                note.content = finalRemoteNoteBody;
-            });
-        }
-        
         // Set up the toolbar.
         setupToolbar(title);
 

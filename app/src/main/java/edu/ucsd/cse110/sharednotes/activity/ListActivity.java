@@ -16,8 +16,14 @@ import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import edu.ucsd.cse110.sharednotes.R;
 import edu.ucsd.cse110.sharednotes.model.Note;
+import edu.ucsd.cse110.sharednotes.model.NoteAPI;
 import edu.ucsd.cse110.sharednotes.view.NotesAdapter;
 import edu.ucsd.cse110.sharednotes.viewmodel.ListViewModel;
 
@@ -85,6 +91,7 @@ public class ListActivity extends AppCompatActivity {
 
         // Set the content view to be the main layout.
         setContentView(R.layout.activity_list);
+
 
         // Note: we are avoiding storing viewModel and adapter in fields we access later. This is
         // because fields are mutable, and mutable state is hard to reason about. They could be

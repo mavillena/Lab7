@@ -8,14 +8,17 @@ import androidx.annotation.WorkerThread;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
@@ -27,6 +30,8 @@ public class NoteAPI {
     private volatile static NoteAPI instance = null;
 
     private OkHttpClient client;
+    public static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
 
     public NoteAPI() {
         this.client = new OkHttpClient();
@@ -78,13 +83,12 @@ public class NoteAPI {
     }
 
     @AnyThread
-    public String getNoteAsync(String title) throws ExecutionException, InterruptedException, TimeoutException {
+    public Future<String> getNoteAsync(String title) throws ExecutionException, InterruptedException, TimeoutException {
         var executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> getNote(title));
 
         // We can use future.get(1, SECONDS) to wait for the result.
-        String futureString = future.get(1, TimeUnit.SECONDS);
-        return futureString;
+        return future;
     }
 
     public String getNote(String title) {
@@ -94,14 +98,26 @@ public class NoteAPI {
                 .build();
 
         try (var response = client.newCall(request).execute()) {
-//            if (response.body() == null){
-//                return null;
-//            }
             var body = response.body().string();
             return body;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public void putNote(String title, String json) {
+        title = title.replace(" ", "%20");
+        RequestBody body = RequestBody.create(json, JSON);
+        var request = new Request.Builder()
+                .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
+                .method("PUT", body)
+                .build();
+
+        try {
+            client.newCall(request).execute();
+        } catch (IOException e) {
+            return;
         }
     }
 }

@@ -6,8 +6,12 @@ import androidx.lifecycle.Observer;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class NoteRepository {
     private final NoteDao dao;
@@ -52,7 +56,6 @@ public class NoteRepository {
 
     public void upsertSynced(Note note) {
         upsertLocal(note);
-        upsertRemote(note);
     }
 
     // Local Methods
@@ -97,22 +100,32 @@ public class NoteRepository {
         if (this.poller != null && !this.poller.isCancelled()) {
             poller.cancel(true);
         }
+        NoteAPI api = new NoteAPI();
+        String noteBody = null;
+        try {
+            Future<String> futureNoteBody = api.getNoteAsync(title);
+            noteBody = futureNoteBody.get(1, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+        Note note = Note.fromJSON(noteBody);
+
+        if (!note.title.equals("Note not found.")) {
+            return dao.get(title);
+        }
+
+        return null;
 
         // Set up a background thread that will poll the server every 3 seconds.
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
         // you don't create a new polling thread every time you call getRemote with the same title.
         // You don't need to worry about killing background threads.
-        if (existsLocal(title)) {
-            return dao.get(title);
-        }
-        return null;
 
         //throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    public void upsertRemote(Note note) {
-        // TODO: Implement upsertRemote!
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }
