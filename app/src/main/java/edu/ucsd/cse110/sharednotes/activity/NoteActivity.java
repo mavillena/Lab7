@@ -12,7 +12,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import edu.ucsd.cse110.sharednotes.R;
 import edu.ucsd.cse110.sharednotes.model.Note;
@@ -40,7 +43,16 @@ public class NoteActivity extends AppCompatActivity {
 
         var intent = getIntent();
         var title = intent.getStringExtra("note_title");
-        String remoteNoteBody = api.getNoteAsync(title);
+        String remoteNoteBody = null;
+        try {
+            remoteNoteBody = api.getNoteAsync(title);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
+        }
 
 
         var viewModel = setupViewModel();
@@ -48,8 +60,9 @@ public class NoteActivity extends AppCompatActivity {
 
 
         if (remoteNoteBody != null) {
+            String finalRemoteNoteBody = remoteNoteBody;
             note.observe(this, note -> {
-                note.content = remoteNoteBody;
+                note.content = finalRemoteNoteBody;
             });
         }
         

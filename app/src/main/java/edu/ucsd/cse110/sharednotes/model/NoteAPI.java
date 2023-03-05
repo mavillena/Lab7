@@ -8,8 +8,11 @@ import androidx.annotation.WorkerThread;
 
 import com.google.gson.Gson;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -75,15 +78,13 @@ public class NoteAPI {
     }
 
     @AnyThread
-    public String getNoteAsync(String title) {
+    public String getNoteAsync(String title) throws ExecutionException, InterruptedException, TimeoutException {
         var executor = Executors.newSingleThreadExecutor();
-        var future = executor.submit(() -> {
-                    String noteBody = getNote(title);
-                    return noteBody;
-                });
+        var future = executor.submit(() -> getNote(title));
 
         // We can use future.get(1, SECONDS) to wait for the result.
-        return null;
+        String futureString = future.get(1, TimeUnit.SECONDS);
+        return futureString;
     }
 
     public String getNote(String title) {
