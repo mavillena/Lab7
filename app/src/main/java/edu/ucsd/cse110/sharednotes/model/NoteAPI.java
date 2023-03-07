@@ -106,8 +106,10 @@ public class NoteAPI {
         }
     }
 
-    public void putNote(String title, String json) {
+    public void putNote(Note note) {
+        String title = note.title;
         title = title.replace(" ", "%20");
+        String json = note.toJSON();
         RequestBody body = RequestBody.create(json, JSON);
         var request = new Request.Builder()
                 .url("https://sharednotes.goto.ucsd.edu/notes/" + title)
@@ -117,6 +119,7 @@ public class NoteAPI {
         try {
             client.newCall(request).execute();
         } catch (IOException e) {
+            e.printStackTrace();
             return;
         }
     }

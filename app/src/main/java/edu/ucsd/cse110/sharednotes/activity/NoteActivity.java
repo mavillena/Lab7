@@ -41,32 +41,11 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.activity_note);
         contentView = findViewById(R.id.edittext_note_contents);
 
-        NoteRepository repo = new NoteRepository(this.dao);
-        NoteAPI api = new NoteAPI();
-
         var intent = getIntent();
         var title = intent.getStringExtra("note_title");
-//        Future<String> stringFuture;
-//        String noteBody;
-//        try {
-//            stringFuture = api.getNoteAsync(title);
-//            noteBody = stringFuture.get(1, SECONDS);
-//        } catch (ExecutionException e) {
-//            throw new RuntimeException(e);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        } catch (TimeoutException e) {
-//            throw new RuntimeException(e);
-//        }
 
         var viewModel = setupViewModel();
         note = viewModel.getNote(title);
-
-//        if (noteBody != null) {
-//            note.observe(this, note -> {
-//                note.content = noteBody;
-//            });
-//        }
 
         // Set up the toolbar.
         setupToolbar(title);

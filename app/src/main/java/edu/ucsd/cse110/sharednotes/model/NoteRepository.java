@@ -2,11 +2,13 @@ package edu.ucsd.cse110.sharednotes.model;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -100,27 +102,23 @@ public class NoteRepository {
         if (this.poller != null && !this.poller.isCancelled()) {
             poller.cancel(true);
         }
-        NoteAPI api = new NoteAPI();
-        String noteBody = null;
-        try {
-            Future<String> futureNoteBody = api.getNoteAsync(title);
-            noteBody = futureNoteBody.get(1, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-        Note note = Note.fromJSON(noteBody);
-
-        if (!note.title.equals("Note not found.")) {
-            return dao.get(title);
-        }
-
-        return null;
 
         // Set up a background thread that will poll the server every 3 seconds.
+
+        NoteAPI api = new NoteAPI();
+
+        MutableLiveData<Note> noteVersion = new MutableLiveData<>();
+//        MutableLiveData<Note> noteData = new MutableLiveData<>();
+        var executor = Executors.newSingleThreadScheduledExecutor();
+        poller = executor.scheduleAtFixedRate(() -> {
+            String noteString = api.getNote(title);
+            Note noteJSON = Note.fromJSON(noteString);
+            noteVersion.postValue(noteJSON);
+        }, 0, 3000, TimeUnit.MILLISECONDS);
+
+//        noteData.addSource(noteVersion, noteData::postValue);
+
+        return noteVersion;
 
         // You may (but don't have to) want to cache the LiveData's for each title, so that
         // you don't create a new polling thread every time you call getRemote with the same title.

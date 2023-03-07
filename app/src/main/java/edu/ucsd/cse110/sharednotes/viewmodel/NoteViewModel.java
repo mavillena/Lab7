@@ -38,6 +38,7 @@ public class NoteViewModel extends AndroidViewModel {
         // TODO: try to upload the note to the server.
         repo.upsertLocal(note);
         NoteAPI api = new NoteAPI();
+        api.putNote(note);
 
     }
 }
