@@ -123,4 +123,11 @@ public class NoteAPI {
             return;
         }
     }
+
+    public void putNoteAsync(Note note) {
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> putNote(note));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+    }
 }
